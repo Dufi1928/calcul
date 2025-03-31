@@ -1,5 +1,5 @@
 // calculatrice.test.js
-const Calculatrice = require('./calculatrice');
+import Calculatrice from './calculatrice.js';
 
 describe('Calculatrice', () => {
     test('Addition : 2 + 3 doit donner 5', () => {

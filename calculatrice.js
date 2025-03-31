@@ -1,4 +1,5 @@
-class Calculatrice {
+// calculatrice.js
+export default class Calculatrice {
     constructor() {
         this.historique = [];
     }
@@ -29,5 +30,3 @@ class Calculatrice {
         this.historique = [];
     }
 }
-
-module.exports = Calculatrice;

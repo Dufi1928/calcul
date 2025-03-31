@@ -1,40 +1,83 @@
-// calculatrice.test.js
 import Calculatrice from './calculatrice.js';
 
-describe('Calculatrice', () => {
-    test('Addition : 2 + 3 doit donner 5', () => {
-        const calc = new Calculatrice();
-        expect(calc.add(2, 3)).toBe(5);
-    });
+const calc = new Calculatrice();
+const display = document.getElementById('display');
+const historyList = document.getElementById('history-list');
+const clearHistoryButton = document.getElementById('clear-history');
 
-    test('Soustraction : 5 - 3 doit donner 2', () => {
-        const calc = new Calculatrice();
-        expect(calc.subtract(5, 3)).toBe(2);
-    });
+let firstOperand = null;
+let operator = null;
+let waitingForSecondOperand = false;
 
-    test('Multiplication : 2 * 3 doit donner 6', () => {
-        const calc = new Calculatrice();
-        expect(calc.multiply(2, 3)).toBe(6);
+function updateHistory() {
+    historyList.innerHTML = '';
+    calc.getHistorique().forEach(entry => {
+        let opSymbol;
+        if (entry.operation === 'addition') {
+            opSymbol = '+';
+        } else if (entry.operation === 'soustraction') {
+            opSymbol = '–';
+        } else if (entry.operation === 'multiplication') {
+            opSymbol = '×';
+        }
+        const li = document.createElement('li');
+        li.textContent = `${entry.a} ${opSymbol} ${entry.b} = ${entry.result}`;
+        historyList.appendChild(li);
     });
+}
 
-    test("Historique : doit enregistrer les opérations effectuées", () => {
-        const calc = new Calculatrice();
-        calc.add(2, 3);
-        calc.subtract(5, 3);
-        calc.multiply(4, 2);
-        const historique = calc.getHistorique();
-        expect(historique.length).toBe(3);
-        expect(historique).toEqual([
-            { operation: 'addition', a: 2, b: 3, result: 5 },
-            { operation: 'soustraction', a: 5, b: 3, result: 2 },
-            { operation: 'multiplication', a: 4, b: 2, result: 8 }
-        ]);
+// Gestion des boutons chiffres
+document.querySelectorAll('.digit').forEach(button => {
+    button.addEventListener('click', () => {
+        const digit = button.getAttribute('data-digit');
+        if (waitingForSecondOperand) {
+            display.textContent = digit;
+            waitingForSecondOperand = false;
+        } else {
+            display.textContent = display.textContent === '0' ? digit : display.textContent + digit;
+        }
     });
+});
 
-    test("Effacer l'historique : doit vider l'historique", () => {
-        const calc = new Calculatrice();
-        calc.add(1, 1);
-        calc.clearHistorique();
-        expect(calc.getHistorique().length).toBe(0);
+// Gestion des boutons opérateurs
+document.querySelectorAll('.operator').forEach(button => {
+    button.addEventListener('click', () => {
+        firstOperand = parseFloat(display.textContent);
+        operator = button.getAttribute('data-operator');
+        waitingForSecondOperand = true;
     });
+});
+
+// Bouton "=" pour effectuer le calcul
+document.getElementById('equals').addEventListener('click', () => {
+    if (firstOperand !== null && operator !== null) {
+        const secondOperand = parseFloat(display.textContent);
+        let result;
+        if (operator === 'add') {
+            result = calc.add(firstOperand, secondOperand);
+        } else if (operator === 'subtract') {
+            result = calc.subtract(firstOperand, secondOperand);
+        } else if (operator === 'multiply') {
+            result = calc.multiply(firstOperand, secondOperand);
+        }
+        display.textContent = result;
+        firstOperand = null;
+        operator = null;
+        waitingForSecondOperand = false;
+        updateHistory();
+    }
+});
+
+// Bouton "C" pour réinitialiser l'affichage et les variables
+document.getElementById('clear').addEventListener('click', () => {
+    display.textContent = '0';
+    firstOperand = null;
+    operator = null;
+    waitingForSecondOperand = false;
+});
+
+// Bouton pour effacer l'historique
+clearHistoryButton.addEventListener('click', () => {
+    calc.clearHistorique();
+    updateHistory();
 });
